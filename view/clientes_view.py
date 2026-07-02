@@ -167,53 +167,94 @@ class ClientesView(ctk.CTkFrame):
     def _mostrar_grafo(self):
         dialog = ctk.CTkToplevel(self)
         dialog.title('Grafo de Recomendaciones')
-        dialog.geometry('700x500')
+        dialog.geometry('780x620')
         dialog.transient(self)
         dialog.grab_set()
 
-        frame = ctk.CTkFrame(dialog, fg_color='#16213e', corner_radius=12)
-        frame.pack(fill='both', expand=True, padx=15, pady=15)
+        scroll_main = ctk.CTkScrollableFrame(dialog, fg_color='#16213e', corner_radius=12)
+        scroll_main.pack(fill='both', expand=True, padx=15, pady=15)
 
-        ctk.CTkLabel(frame, text='🔗 Grafo de Productos (Recomendación de Combos)',
-                     font=ctk.CTkFont(size=16, weight='bold')).pack(pady=(10, 15))
+        ctk.CTkLabel(scroll_main, text='🔗 Grafo de Productos — Recomendación de Combos',
+                     font=ctk.CTkFont(size=16, weight='bold')).pack(pady=(10, 5))
+
+        # ── Explicación ──
+        expl = ctk.CTkFrame(scroll_main, fg_color='#0d1b2a', corner_radius=10)
+        expl.pack(fill='x', padx=10, pady=5)
+        ctk.CTkLabel(expl, text='¿Cómo funciona?',
+                     font=ctk.CTkFont(size=13, weight='bold'), text_color='#F39C12').pack(anchor='w', padx=12, pady=(8, 2))
+        ctk.CTkLabel(expl, text=(
+            'Se construye un Grafo NO DIRIGIDO donde cada vértice es un producto.\n'
+            'Se crea una arista entre dos productos cuando aparecen juntos en un mismo pedido.\n'
+            'La Matriz de Adyacencia registra la cantidad de veces que cada par se compró junto.\n\n'
+            '🔎 ¿Por qué se recomiendan? Porque históricamente los clientes que pidieron X '
+            'también pidieron Y (relación basada en datos reales de ventas).\n\n'
+            'BFS (Anchura): Explora productos relacionados nivel por nivel.\n'
+            'DFS (Profundidad): Explora una cadena de relaciones hasta el final.'
+        ), font=ctk.CTkFont(size=11), text_color='#CCCCCC', justify='left', wraplength=680).pack(padx=12, pady=(0, 8))
 
         grafo = self.ctrl.construir_grafo_recomendaciones()
-
-        info = ctk.CTkFrame(frame, fg_color='transparent')
-        info.pack(fill='both', expand=True, padx=15, pady=5)
-
         vertices = grafo.obtener_vertices()
-        ctk.CTkLabel(info, text=f'📌 Productos ({len(vertices)}):',
-                     font=ctk.CTkFont(size=14, weight='bold')).pack(anchor='w', pady=5)
-        scroll_v = ctk.CTkScrollableFrame(info, height=80, fg_color='#0d1b2a', corner_radius=8)
-        scroll_v.pack(fill='x', pady=5)
+        matriz = grafo.obtener_matriz()
+
+        # ── Lista de productos ──
+        ctk.CTkLabel(scroll_main, text=f'📌 Productos en el grafo ({len(vertices)}):',
+                     font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w', padx=10, pady=(8, 2))
+        prod_scroll = ctk.CTkScrollableFrame(scroll_main, height=70, fg_color='#0d1b2a', corner_radius=8)
+        prod_scroll.pack(fill='x', padx=10, pady=3)
         for v in vertices:
-            ctk.CTkLabel(scroll_v, text=f'  • {v}', font=ctk.CTkFont(size=12),
+            ctk.CTkLabel(prod_scroll, text=f'  • {v}', font=ctk.CTkFont(size=11),
                          anchor='w').pack(fill='x', padx=10)
 
-        matriz = grafo.obtener_matriz()
-        ctk.CTkLabel(info, text=f'📊 Matriz de Adyacencia ({len(vertices)}x{len(vertices)}):',
-                     font=ctk.CTkFont(size=14, weight='bold')).pack(anchor='w', pady=(10, 5))
+        # ── Matriz de Adyacencia con tabla fija ──
+        ctk.CTkLabel(scroll_main, text=f'📊 Matriz de Adyacencia ({len(vertices)}x{len(vertices)}):',
+                     font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w', padx=10, pady=(8, 2))
 
-        matrix_frame = ctk.CTkScrollableFrame(info, fg_color='#0d1b2a', corner_radius=8, height=150)
-        matrix_frame.pack(fill='x', pady=5)
+        mat_container = ctk.CTkFrame(scroll_main, fg_color='#0d1b2a', corner_radius=8)
+        mat_container.pack(fill='x', padx=10, pady=3)
+        mat_scroll = ctk.CTkScrollableFrame(mat_container, fg_color='transparent', height=160)
+        mat_scroll.pack(fill='x', padx=2, pady=2)
 
-        header = '      ' + ' '.join(f'{v[:6]:>6}' for v in vertices)
-        ctk.CTkLabel(matrix_frame, text=header, font=ctk.CTkFont(size=10, weight='bold'),
-                     text_color='#2ECC71').pack(anchor='w', padx=5)
+        n = len(vertices)
+        cols = n + 1
+        mat_scroll.grid_columnconfigure(tuple(range(cols)), weight=0, minsize=70)
+
+        header_bg = '#1a3d2e'
+        ctk.CTkLabel(mat_scroll, text='', width=70, fg_color=header_bg,
+                      corner_radius=4).grid(row=0, column=0, sticky='nsew', padx=1, pady=1)
+        for j, v in enumerate(vertices):
+            display = v[:6] + '..' if len(v) > 6 else v
+            lbl = ctk.CTkLabel(mat_scroll, text=display, width=70, font=ctk.CTkFont(size=10, weight='bold'),
+                               fg_color=header_bg, corner_radius=4)
+            lbl.grid(row=0, column=j + 1, sticky='nsew', padx=1, pady=1)
 
         for i, v in enumerate(vertices):
-            linea = f'{v[:6]:>6} ' + ' '.join(f'{matriz[i][j]:>6}' for j in range(len(vertices)))
-            ctk.CTkLabel(matrix_frame, text=linea, font=ctk.CTkFont(size=10)).pack(anchor='w', padx=5)
+            display = v[:6] + '..' if len(v) > 6 else v
+            bg_row = '#1a1a3e' if i % 2 == 0 else '#0d1b2a'
+            lbl = ctk.CTkLabel(mat_scroll, text=display, width=70, font=ctk.CTkFont(size=10, weight='bold'),
+                               fg_color=bg_row, corner_radius=4)
+            lbl.grid(row=i + 1, column=0, sticky='nsew', padx=1, pady=1)
+            for j in range(n):
+                val = matriz[i][j]
+                color = '#2ECC71' if val else '#444'
+                cell = ctk.CTkLabel(mat_scroll, text=str(val), width=70, font=ctk.CTkFont(size=10),
+                                    fg_color=bg_row, text_color=color, corner_radius=4)
+                cell.grid(row=i + 1, column=j + 1, sticky='nsew', padx=1, pady=1)
 
-        ctk.CTkLabel(info, text=f'📌 BFS desde el primer nodo: {grafo.bfs(vertices[0]) if vertices else "N/A"}',
-                     font=ctk.CTkFont(size=12), text_color='#BBBBBB', wraplength=600).pack(anchor='w', pady=5)
+        # ── BFS / DFS ──
+        ctk.CTkLabel(scroll_main, text=f'🌐 BFS desde "{vertices[0]}": {grafo.bfs(vertices[0]) if vertices else "N/A"}',
+                     font=ctk.CTkFont(size=12), text_color='#2ECC71', wraplength=680).pack(anchor='w', padx=10, pady=(8, 2))
+        ctk.CTkLabel(scroll_main, text=f'🔍 DFS desde "{vertices[0]}": {grafo.dfs(vertices[0]) if vertices else "N/A"}',
+                     font=ctk.CTkFont(size=12), text_color='#3498DB', wraplength=680).pack(anchor='w', padx=10, pady=2)
 
-        ctk.CTkLabel(info, text=f'📌 DFS desde el primer nodo: {grafo.dfs(vertices[0]) if vertices else "N/A"}',
-                     font=ctk.CTkFont(size=12), text_color='#BBBBBB', wraplength=600).pack(anchor='w')
-
-        if len(vertices) <= 6:
+        # ── Euleriano / Hamiltoniano ──
+        if len(vertices) <= 6 and vertices:
             euler = grafo.es_euleriano()
             hamil = grafo.es_hamiltoniano()
-            ctk.CTkLabel(info, text=f'📌 Euleriano: {"Sí" if euler else "No"} | Hamiltoniano: {"Sí" if hamil else "No"}',
-                         font=ctk.CTkFont(size=12), text_color='#F39C12').pack(anchor='w', pady=5)
+            ctk.CTkLabel(scroll_main,
+                         text=f'📌 Euleriano: {"Sí (recorre todas las aristas una vez)" if euler else "No"} | '
+                              f'Hamiltoniano: {"Sí (recorre todos los vértices una vez)" if hamil else "No"}',
+                         font=ctk.CTkFont(size=12), text_color='#F39C12', wraplength=680).pack(anchor='w', padx=10, pady=5)
+
+        n_aristas = sum(sum(1 for v in fila if v != 0) for fila in matriz)
+        ctk.CTkLabel(scroll_main, text=f'Aristas totales: {n_aristas} relaciones entre productos',
+                     font=ctk.CTkFont(size=11), text_color='#888888').pack(anchor='w', padx=10, pady=(2, 8))

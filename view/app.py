@@ -3,7 +3,7 @@ from view.menu_view import MenuView
 from view.pedidos_view import PedidosView
 from view.caja_view import CajaView
 from view.clientes_view import ClientesView
-from view.estructuras_view import EstructurasView
+
 
 
 class App(ctk.CTk):
@@ -46,7 +46,6 @@ class App(ctk.CTk):
             ('🧾', 'Pedidos', 'pedidos'),
             ('💰', 'Caja', 'caja'),
             ('👥', 'Clientes', 'clientes'),
-            ('🔬', 'Estructuras', 'estructuras'),
         ]
 
         for icon, label, view_name in nav_items:
@@ -81,7 +80,6 @@ class App(ctk.CTk):
         self._views['pedidos'] = PedidosView(self.main_container, self)
         self._views['caja'] = CajaView(self.main_container, self)
         self._views['clientes'] = ClientesView(self.main_container, self)
-        self._views['estructuras'] = EstructurasView(self.main_container, self)
 
     def _show_view(self, view_name):
         if self._current_view:

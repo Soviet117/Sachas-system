@@ -167,40 +167,111 @@ class MenuView(ctk.CTkFrame):
     def _mostrar_arbol(self):
         dialog = ctk.CTkToplevel(self)
         dialog.title('Árbol AVL del Catálogo')
-        dialog.geometry('700x500')
+        dialog.geometry('800x600')
         dialog.transient(self)
         dialog.grab_set()
+
+        import tkinter as tk
 
         frame = ctk.CTkFrame(dialog, fg_color='#16213e', corner_radius=12)
         frame.pack(fill='both', expand=True, padx=15, pady=15)
 
         ctk.CTkLabel(frame, text='🌳 Catálogo como Árbol AVL (ordenado por nombre)',
-                     font=ctk.CTkFont(size=16, weight='bold')).pack(pady=(10, 15))
+                     font=ctk.CTkFont(size=16, weight='bold')).pack(pady=(10, 5))
+        ctk.CTkLabel(frame, text='Cada nodo es un producto · Búsqueda O(log n) · Auto-balanceable',
+                     font=ctk.CTkFont(size=11), text_color='#888').pack()
 
         arbol = self.ctrl.construir_arbol_catalogo()
 
-        info_frame = ctk.CTkFrame(frame, fg_color='transparent')
-        info_frame.pack(fill='x', padx=15, pady=5)
+        canvas_frame = ctk.CTkFrame(frame, fg_color='#0d1b2a', corner_radius=12)
+        canvas_frame.pack(fill='both', expand=True, padx=10, pady=5)
+        canvas_frame.grid_rowconfigure(0, weight=1)
+        canvas_frame.grid_columnconfigure(0, weight=1)
+
+        canvas = tk.Canvas(canvas_frame, bg='#0d1b2a', highlightthickness=0)
+        v_scroll = ctk.CTkScrollbar(canvas_frame, orientation='vertical', command=canvas.yview)
+        h_scroll = ctk.CTkScrollbar(canvas_frame, orientation='horizontal', command=canvas.xview)
+        canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+        canvas.grid(row=0, column=0, sticky='nsew')
+        v_scroll.grid(row=0, column=1, sticky='ns')
+        h_scroll.grid(row=1, column=0, sticky='ew')
+
+        info = ctk.CTkFrame(frame, fg_color='transparent')
+        info.pack(fill='x', padx=10, pady=2)
+
+        if not arbol.raiz:
+            canvas.create_text(350, 200, text='🌳 Catálogo vacío — agrega productos primero',
+                               fill='#666666', font=('Arial', 14))
+            return
+
+        H_SPACING, V_SPACING, NODE_W, NODE_H = 148, 98, 108, 52
+        positions = {}
+        x_counter = [0]
+
+        def inorder_layout(nodo, depth):
+            if not nodo:
+                return
+            inorder_layout(nodo.izquierdo, depth + 1)
+            x = x_counter[0] * H_SPACING + NODE_W // 2 + 40
+            y = depth * V_SPACING + NODE_H // 2 + 35
+            positions[nodo.clave] = (x, y, nodo)
+            x_counter[0] += 1
+            inorder_layout(nodo.derecho, depth + 1)
+
+        inorder_layout(arbol.raiz, 0)
+
+        total_nodes = x_counter[0]
+        cw = max(total_nodes * H_SPACING + 120, 500)
+        max_depth = max(((y - NODE_H // 2 - 35) // V_SPACING) for (x, y, n) in positions.values()) if positions else 0
+        ch = max((max_depth + 1) * V_SPACING + 110, 250)
+        canvas.configure(scrollregion=(0, 0, cw, ch))
+
+        def draw_lines(nodo):
+            if not nodo:
+                return
+            x, y, _ = positions.get(nodo.clave, (0, 0, None))
+            if nodo.izquierdo and nodo.izquierdo.clave in positions:
+                lx, ly, _ = positions[nodo.izquierdo.clave]
+                canvas.create_line(x, y + NODE_H // 2, lx, ly - NODE_H // 2,
+                                   fill='#2ECC71', width=2, smooth=True)
+            if nodo.derecho and nodo.derecho.clave in positions:
+                rx, ry, _ = positions[nodo.derecho.clave]
+                canvas.create_line(x, y + NODE_H // 2, rx, ry - NODE_H // 2,
+                                   fill='#2ECC71', width=2, smooth=True)
+            draw_lines(nodo.izquierdo)
+            draw_lines(nodo.derecho)
+
+        draw_lines(arbol.raiz)
+
+        for clave, (x, y, nodo) in positions.items():
+            x0, y0 = x - NODE_W // 2, y - NODE_H // 2
+            x1, y1 = x + NODE_W // 2, y + NODE_H // 2
+            canvas.create_rectangle(x0 + 2, y0 + 2, x1 - 2, y1 - 2,
+                                    fill='#1a3d2e', outline='#2ECC71', width=2)
+            display = clave if len(clave) <= 14 else clave[:12] + '..'
+            canvas.create_text(x, y - 8, text=display,
+                               fill='#2ECC71', font=('Arial', 10, 'bold'))
+            if hasattr(nodo.valor, 'precio'):
+                canvas.create_text(x, y + 12, text=f'S/{nodo.valor.precio:.2f}',
+                                   fill='#99CC99', font=('Arial', 9))
 
         inorden = arbol.inorden()
-        ctk.CTkLabel(info_frame, text=f'📌 Inorden ({len(inorden)} productos):',
-                     font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w')
-        texto = ' → '.join(n for n, v in inorden)
-        scroll = ctk.CTkScrollableFrame(info_frame, height=60, fg_color='#0d1b2a', corner_radius=8)
-        scroll.pack(fill='x', pady=5)
-        ctk.CTkLabel(scroll, text=texto, font=ctk.CTkFont(size=11), text_color='#2ECC71', wraplength=600).pack(padx=10, pady=5)
+        preorden = arbol.preorden()
+        postorden = arbol.postorden()
 
-        niveles = arbol.obtener_niveles()
-        ctk.CTkLabel(info_frame, text=f'📊 Niveles del árbol ({len(niveles)} niveles):',
-                     font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w', pady=(10, 0))
+        def fmt(lista):
+            if not lista:
+                return '(vacío)'
+            return ' → '.join(str(k) for k, v in lista)
 
-        for nivel, nodos in enumerate(niveles):
-            nivel_text = f'Nivel {nivel}: ' + ' | '.join(f'{n}({v.precio:.0f})' if v else str(n) for n, v in nodos)
-            ctk.CTkLabel(info_frame, text=nivel_text, font=ctk.CTkFont(size=12), text_color='#BBBBBB').pack(anchor='w', padx=10)
+        ctk.CTkLabel(info, text=f'📌 Inorden: {fmt(inorden)}',
+                     font=ctk.CTkFont(size=11), text_color='#BBBBBB', wraplength=720).pack(anchor='w')
+        ctk.CTkLabel(info, text=f'📌 Preorden: {fmt(preorden)}',
+                     font=ctk.CTkFont(size=11), text_color='#BBBBBB', wraplength=720).pack(anchor='w')
+        ctk.CTkLabel(info, text=f'📌 Postorden: {fmt(postorden)}',
+                     font=ctk.CTkFont(size=11), text_color='#BBBBBB', wraplength=720).pack(anchor='w')
 
         ops = arbol.obtener_operaciones()
         if ops:
-            ctk.CTkLabel(info_frame, text=f'🔄 Rotaciones realizadas:',
-                         font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w', pady=(10, 0))
-            for op in ops[-8:]:
-                ctk.CTkLabel(info_frame, text=f'  {op}', font=ctk.CTkFont(size=11), text_color='#F39C12').pack(anchor='w', padx=10)
+            ctk.CTkLabel(info, text='🔄 ' + ' | '.join(ops[-5:]),
+                         font=ctk.CTkFont(size=10), text_color='#F39C12', wraplength=720).pack(anchor='w')
