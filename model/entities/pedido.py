@@ -50,5 +50,13 @@ class Pedido:
             cliente_nombre=data.get('cliente_nombre', '')
         )
 
+    def __eq__(self, other):
+        if isinstance(other, Pedido):
+            return self.id == other.id
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self.id)
+
     def __repr__(self):
         return f'Pedido({self.id}, {self.estado}, S/{self.total:.2f})'

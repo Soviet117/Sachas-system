@@ -86,9 +86,6 @@ class App(ctk.CTk):
         self._views['clientes'] = ClientesView(self.main_container, self)
         self._views['estructuras'] = EstructurasView(self.main_container, self)
 
-        for view in self._views.values():
-            view.pack(fill='both', expand=True)
-
     def _show_view(self, view_name):
         if self._current_view:
             self._views[self._current_view].pack_forget()

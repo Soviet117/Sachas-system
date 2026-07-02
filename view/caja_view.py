@@ -91,19 +91,41 @@ class CajaView(ctk.CTkFrame):
         listos = [p for p in todos if p.estado == 'listo']
         if not listos:
             ctk.CTkLabel(self._listos_frame, text='No hay pedidos listos para cobrar',
-                         text_color='#666').pack(pady=20)
+                         text_color='#666', font=ctk.CTkFont(size=13)).pack(pady=30)
+            return
         for pedido in listos:
-            row = ctk.CTkFrame(self._listos_frame, fg_color='#1a1a3e', corner_radius=8)
-            row.pack(fill='x', pady=3)
-            ctk.CTkLabel(row, text=f'✅ #{pedido.id}', width=50,
-                         font=ctk.CTkFont(size=13, weight='bold')).pack(side='left', padx=5)
-            ctk.CTkLabel(row, text=pedido.cliente_nombre or 'General',
-                         font=ctk.CTkFont(size=12)).pack(side='left', fill='x', expand=True)
-            ctk.CTkLabel(row, text=f'S/{pedido.total:.2f}',
-                         font=ctk.CTkFont(size=14, weight='bold'),
-                         text_color='#2ECC71').pack(side='right', padx=10)
-            ctk.CTkButton(row, text='Cobrar', width=70, height=28,
-                          command=lambda pid=pedido.id: self._cobrar_id(pid)).pack(side='right', padx=5)
+            self.pedido_ctrl._cargar_detalles(pedido)
+
+            card = ctk.CTkFrame(self._listos_frame, fg_color='#1a3e1a', corner_radius=10,
+                                border_width=2, border_color='#2ECC71')
+            card.pack(fill='x', pady=4, padx=2)
+
+            header = ctk.CTkFrame(card, fg_color='transparent')
+            header.pack(fill='x', padx=12, pady=(8, 2))
+
+            ctk.CTkLabel(header, text=f'✅ #{pedido.id}',
+                         font=ctk.CTkFont(size=14, weight='bold'), text_color='#2ECC71').pack(side='left')
+            ctk.CTkLabel(header, text=pedido.cliente_nombre or 'General',
+                         font=ctk.CTkFont(size=13), anchor='w').pack(side='left', fill='x', expand=True, padx=8)
+            ctk.CTkLabel(header, text=f'S/{pedido.total:.2f}',
+                         font=ctk.CTkFont(size=14, weight='bold'), text_color='#2ECC71').pack(side='right')
+
+            if pedido.detalles:
+                body = ctk.CTkFrame(card, fg_color='transparent')
+                body.pack(fill='x', padx=12, pady=(2, 6))
+                for d in pedido.detalles[:4]:
+                    ctk.CTkLabel(body, text=f'  • {d.producto_nombre} x{d.cantidad}',
+                                 font=ctk.CTkFont(size=11), text_color='#CCCCCC', anchor='w').pack(fill='x')
+                if len(pedido.detalles) > 4:
+                    ctk.CTkLabel(body, text=f'  ... +{len(pedido.detalles) - 4} más',
+                                 font=ctk.CTkFont(size=10), text_color='#666').pack(anchor='w')
+
+            btn_frame = ctk.CTkFrame(card, fg_color='transparent')
+            btn_frame.pack(fill='x', padx=12, pady=(4, 8))
+            ctk.CTkButton(btn_frame, text='💵 Cobrar', height=30,
+                          font=ctk.CTkFont(size=12),
+                          fg_color='#1E8449', hover_color='#2ECC71',
+                          command=lambda pid=pedido.id: self._cobrar_id(pid)).pack(side='right', padx=2)
 
     def _actualizar_resumen(self):
         total = self.venta_ctrl.ventas_del_dia()
@@ -118,6 +140,7 @@ class CajaView(ctk.CTkFrame):
         if not ventas:
             ctk.CTkLabel(self._historial_frame, text='Sin ventas aún',
                          text_color='#666').pack(pady=20)
+            return
         for v in ventas:
             row = ctk.CTkFrame(self._historial_frame, fg_color='transparent')
             row.pack(fill='x', pady=1)

@@ -142,7 +142,7 @@ class DashboardView(ctk.CTkFrame):
         recientes = self.pedido_ctrl.obtener_pedidos_recientes(8)
         if recientes:
             for pedido in recientes:
-                estados = {'en_cola': '⏳ En cola', 'preparacion': '👨‍🍳 Preparando', 'listo': '✅ Listo', 'completado': '✔ Completado', 'cancelado': '❌ Cancelado'}
+                estados = {'en_cola': '⏳ En cola', 'espera': '🕐 En espera', 'preparacion': '👨‍🍳 Preparando', 'listo': '✅ Listo', 'completado': '✔ Completado', 'cancelado': '❌ Cancelado'}
                 estado = estados.get(pedido.estado, pedido.estado)
                 row = ctk.CTkFrame(self._recent_frame, fg_color='#1a1a3e', corner_radius=6)
                 row.pack(fill='x', pady=2)

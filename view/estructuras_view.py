@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from structures.tad_lista import ListaEnlazada
+from structures.tad_lista_doble import ListaDoblementeEnlazada
 from structures.tad_pila import Pila
 from structures.tad_cola import Cola
 from structures.tad_arbol_avl import ArbolAVL
@@ -26,7 +27,8 @@ class EstructurasView(ctk.CTkFrame):
         tab = ctk.CTkTabview(self, fg_color='transparent')
         tab.pack(fill='both', expand=True, padx=25, pady=5)
 
-        self._build_lista_tab(tab.add('📋 Lista Enlazada'))
+        self._build_lista_tab(tab.add('📋 Lista Simple'))
+        self._build_lista_doble_tab(tab.add('📋 Lista Doble'))
         self._build_pila_tab(tab.add('🥞 Pila (Stack)'))
         self._build_cola_tab(tab.add('🚶 Cola (Queue)'))
         self._build_arbol_tab(tab.add('🌳 Árbol AVL'))
@@ -91,6 +93,93 @@ class EstructurasView(ctk.CTkFrame):
             texto = '  ➡  '.join(str(d) for d in nodos)
             texto += '\n⬇\nNone'
             self._lista_label.configure(text=texto, text_color='#2ECC71')
+
+    def _build_lista_doble_tab(self, parent):
+        self.lista_doble = ListaDoblementeEnlazada()
+        ctk.CTkLabel(parent, text='Lista Doblemente Enlazada',
+                     font=ctk.CTkFont(size=18, weight='bold')).pack(pady=(10, 5))
+        ctk.CTkLabel(parent, text='Inserción y eliminación en O(1) en ambos extremos — recorrido bidireccional',
+                     font=ctk.CTkFont(size=12), text_color='#888').pack()
+
+        ctrl = ctk.CTkFrame(parent, fg_color='transparent')
+        ctrl.pack(pady=10)
+
+        self._ld_entry = ctk.CTkEntry(ctrl, placeholder_text='Valor', width=120)
+        self._ld_entry.pack(side='left', padx=5)
+
+        ctk.CTkButton(ctrl, text='Inicio', width=90,
+                      command=lambda: self._ld_op('inicio')).pack(side='left', padx=3)
+        ctk.CTkButton(ctrl, text='Final', width=90,
+                      command=lambda: self._ld_op('final')).pack(side='left', padx=3)
+        ctk.CTkButton(ctrl, text='Eliminar', width=90, fg_color='#922B21',
+                      command=lambda: self._ld_op('eliminar')).pack(side='left', padx=3)
+        ctk.CTkButton(ctrl, text='Vaciar', width=80, fg_color='#7B241C',
+                      command=self._ld_vaciar).pack(side='left', padx=3)
+
+        nav = ctk.CTkFrame(parent, fg_color='transparent')
+        nav.pack(pady=5)
+        ctk.CTkButton(nav, text='⬅️ Recorrer Atrás', width=140,
+                      command=self._ld_recorrer_atras).pack(side='left', padx=5)
+        ctk.CTkButton(nav, text='➡️ Recorrer Adelante', width=140,
+                      command=self._ld_recorrer_adelante).pack(side='left', padx=5)
+
+        self._ld_display = ctk.CTkFrame(parent, fg_color='#0d1b2a', corner_radius=12, height=140)
+        self._ld_display.pack(fill='x', padx=20, pady=10)
+        self._ld_label = ctk.CTkLabel(self._ld_display, text='Lista vacía\nNone  ⬌  None',
+                                      font=ctk.CTkFont(size=14), text_color='#666')
+        self._ld_label.pack(expand=True)
+
+        self._ld_rec_label = ctk.CTkLabel(parent, text='',
+                                          font=ctk.CTkFont(size=13), text_color='#3498DB')
+        self._ld_rec_label.pack()
+
+        ctk.CTkLabel(parent, text='📍 Complejidad: Inserción/Eliminación en extremos O(1) · Recorrido bidireccional',
+                     font=ctk.CTkFont(size=11), text_color='#555').pack()
+
+    def _ld_op(self, op):
+        val = self._ld_entry.get().strip()
+        if not val and op != 'eliminar':
+            return
+        if op == 'inicio':
+            self.lista_doble.insertar_inicio(val)
+        elif op == 'final':
+            self.lista_doble.insertar_final(val)
+        elif op == 'eliminar':
+            v = self._ld_entry.get().strip()
+            if v:
+                self.lista_doble.eliminar(v)
+        self._actualizar_ld()
+        self._ld_entry.delete(0, 'end')
+
+    def _ld_vaciar(self):
+        while not self.lista_doble.esta_vacia():
+            self.lista_doble.eliminar_primero()
+        self._actualizar_ld()
+
+    def _ld_recorrer_adelante(self):
+        items = self.lista_doble.recorrer_adelante()
+        if items:
+            self._ld_rec_label.configure(text='➡️ ' + '  ↔  '.join(str(d) for d in items) + '  ➡️',
+                                         text_color='#3498DB')
+        else:
+            self._ld_rec_label.configure(text='Lista vacía', text_color='#666')
+
+    def _ld_recorrer_atras(self):
+        items = self.lista_doble.recorrer_atras()
+        if items:
+            self._ld_rec_label.configure(text='⬅️ ' + '  ↔  '.join(str(d) for d in items) + '  ⬅️',
+                                         text_color='#F39C12')
+        else:
+            self._ld_rec_label.configure(text='Lista vacía', text_color='#666')
+
+    def _actualizar_ld(self):
+        if self.lista_doble.esta_vacia():
+            self._ld_label.configure(text='Lista vacía\nNone  ⬌  None', text_color='#666')
+        else:
+            items = self.lista_doble.recorrer_adelante()
+            texto = '  ⬌  '.join(str(d) for d in items)
+            texto += '\n⬆  Cabeza →  ' + str(self.lista_doble.cabeza.dato) + '  |  Cola →  ' + str(self.lista_doble.cola.dato) + '  ⬆'
+            self._ld_label.configure(text=texto, text_color='#9B59B6')
 
     def _build_pila_tab(self, parent):
         self.pila = Pila()
