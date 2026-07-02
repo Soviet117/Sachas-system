@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from view.dashboard_view import DashboardView
 from view.menu_view import MenuView
 from view.pedidos_view import PedidosView
 from view.caja_view import CajaView
@@ -25,7 +24,7 @@ class App(ctk.CTk):
         self._build_sidebar()
         self._build_main_area()
 
-        self._show_view('dashboard')
+        self._show_view('menu')
 
     def _build_sidebar(self):
         self.sidebar = ctk.CTkFrame(self, width=220, corner_radius=0)
@@ -43,7 +42,6 @@ class App(ctk.CTk):
         separator.pack(fill='x', padx=20, pady=10)
 
         nav_items = [
-            ('📊', 'Dashboard', 'dashboard'),
             ('📋', 'Menú', 'menu'),
             ('🧾', 'Pedidos', 'pedidos'),
             ('💰', 'Caja', 'caja'),
@@ -79,7 +77,6 @@ class App(ctk.CTk):
         self.main_container = ctk.CTkFrame(self, fg_color='#1a1a2e', corner_radius=0)
         self.main_container.pack(side='right', fill='both', expand=True)
 
-        self._views['dashboard'] = DashboardView(self.main_container, self)
         self._views['menu'] = MenuView(self.main_container, self)
         self._views['pedidos'] = PedidosView(self.main_container, self)
         self._views['caja'] = CajaView(self.main_container, self)

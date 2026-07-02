@@ -57,8 +57,3 @@ INSERT OR IGNORE INTO producto (nombre, descripcion, precio, categoria, stock) V
 ('Cheesecake', 'Tarta de queso con frutos rojos', 10.00, 'Postres', 20),
 ('Brownie', 'Brownie de chocolate con nueces', 7.00, 'Postres', 25),
 ('Alfajor Artesanal', 'Alfajor de maicena con dulce de leche', 4.00, 'Postres', 40);
-
-INSERT OR IGNORE INTO cliente (nombre, telefono, email) VALUES
-('Cliente General', '', ''),
-('María García', '987654321', 'maria@email.com'),
-('Carlos López', '987654322', 'carlos@email.com');
