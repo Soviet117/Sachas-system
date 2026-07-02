@@ -105,26 +105,17 @@ class PedidosView(ctk.CTkFrame):
         self._cola_frame = ctk.CTkScrollableFrame(cola_tab, fg_color='transparent')
         self._cola_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        ctk.CTkButton(cola_tab, text='➡️ Mover a Espera',
-                      command=self._mover_a_espera).pack(pady=5)
-
         ctk.CTkLabel(espera_tab, text='Pedidos en cola de espera para preparación',
                      font=ctk.CTkFont(size=11), text_color='#888').pack(pady=(5, 0))
 
         self._espera_frame = ctk.CTkScrollableFrame(espera_tab, fg_color='transparent')
         self._espera_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        ctk.CTkButton(espera_tab, text='➡️ Pasar a Preparación',
-                      command=self._pasar_preparacion).pack(pady=5)
-
         ctk.CTkLabel(prep_tab, text='Pedidos en preparación con temporizador',
                      font=ctk.CTkFont(size=11), text_color='#888').pack(pady=(5, 0))
 
         self._prep_frame = ctk.CTkScrollableFrame(prep_tab, fg_color='transparent')
         self._prep_frame.pack(fill='both', expand=True, padx=5, pady=5)
-
-        ctk.CTkButton(prep_tab, text='✅ Marcar como Listo',
-                      command=self._marcar_listo).pack(pady=5)
 
         ctk.CTkButton(right, text='↩️ Deshacer (Ctrl+Z)', command=self._deshacer,
                       fg_color='#7B241C', hover_color='#922B21').pack(pady=5, padx=15, fill='x')
