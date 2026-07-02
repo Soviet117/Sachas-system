@@ -37,15 +37,6 @@ class CajaView(ctk.CTkFrame):
         self._listos_frame = ctk.CTkScrollableFrame(left, fg_color='transparent', height=300)
         self._listos_frame.pack(fill='both', expand=True, padx=10, pady=5)
 
-        ctk.CTkLabel(left, text='Método de pago:',
-                     font=ctk.CTkFont(size=13)).pack(anchor='w', padx=15)
-
-        self._metodo_pago = ctk.CTkOptionMenu(left, values=['Efectivo', 'Tarjeta', 'Yape', 'Plin'])
-        self._metodo_pago.pack(pady=5, padx=15, fill='x')
-
-        self._info_label = ctk.CTkLabel(left, text='', font=ctk.CTkFont(size=14))
-        self._info_label.pack(pady=5)
-
         right = ctk.CTkFrame(container, fg_color='#16213e', corner_radius=12, border_width=1, border_color='#2a2a4a')
         right.grid(row=0, column=1, sticky='nsew', padx=5)
 
@@ -72,9 +63,6 @@ class CajaView(ctk.CTkFrame):
 
         ctk.CTkLabel(right, text='🕐 Últimas ventas:',
                      font=ctk.CTkFont(size=13, weight='bold')).pack(anchor='w', padx=15, pady=(5, 0))
-
-        ctk.CTkButton(left, text='💵 Cobrar Pedido', height=40, fg_color='#1E8449',
-                      hover_color='#2ECC71', command=self._cobrar).pack(pady=15, padx=15, fill='x')
 
     def on_activate(self):
         self._refrescar()
@@ -152,16 +140,6 @@ class CajaView(ctk.CTkFrame):
                          font=ctk.CTkFont(size=11),
                          text_color='#2ECC71').pack(side='right', padx=10)
 
-    def _cobrar(self):
-        todos = self.pedido_ctrl.dao.listar()
-        listos = [p for p in todos if p.estado == 'listo']
-        if listos:
-            self._cobrar_id(listos[0].id)
-
     def _cobrar_id(self, id_pedido):
-        metodo = self._metodo_pago.get().lower()
-        self.pedido_ctrl.cobrar_pedido(id_pedido, metodo)
-        pedido = self.pedido_ctrl.dao.obtener_por_id(id_pedido)
-        self._info_label.configure(text=f'✅ Pedido #{id_pedido} cobrado — S/{pedido.total:.2f}',
-                                   text_color='#2ECC71')
+        self.pedido_ctrl.cobrar_pedido(id_pedido, 'efectivo')
         self._refrescar()
