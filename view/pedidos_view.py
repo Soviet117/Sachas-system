@@ -18,7 +18,7 @@ class PedidosView(ctk.CTkFrame):
         self._qty_vars = {}
 
         label = ctk.CTkLabel(
-            self, text='🧾 Gestión de Pedidos',
+            self, text='Gestión de Pedidos',
             font=ctk.CTkFont(size=28, weight='bold'), anchor='w'
         )
         label.pack(fill='x', padx=30, pady=(25, 5))
@@ -95,9 +95,9 @@ class PedidosView(ctk.CTkFrame):
         tab = ctk.CTkTabview(right, fg_color='transparent')
         tab.pack(fill='both', expand=True, padx=5, pady=5)
 
-        cola_tab = tab.add('⏳ Cola FIFO')
-        espera_tab = tab.add('🕐 Pedidos en espera')
-        prep_tab = tab.add('👨‍🍳 Preparación')
+        cola_tab = tab.add('Cola FIFO')
+        espera_tab = tab.add('Pedidos en espera')
+        prep_tab = tab.add('Preparación')
 
         ctk.CTkLabel(cola_tab, text='Pedidos recién creados esperando su turno',
                      font=ctk.CTkFont(size=11), text_color='#888').pack(pady=(5, 0))
@@ -117,7 +117,7 @@ class PedidosView(ctk.CTkFrame):
         self._prep_frame = ctk.CTkScrollableFrame(prep_tab, fg_color='transparent')
         self._prep_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        ctk.CTkButton(right, text='↩️ Deshacer (Ctrl+Z)', command=self._deshacer,
+        ctk.CTkButton(right, text='Deshacer', command=self._deshacer,
                       fg_color='#7B241C', hover_color='#922B21').pack(pady=5, padx=15, fill='x')
 
     def on_activate(self):
@@ -409,7 +409,7 @@ class PedidosView(ctk.CTkFrame):
             w.destroy()
         pendientes = self.ctrl.obtener_pendientes()
         if not pendientes:
-            ctk.CTkLabel(self._prep_frame, text='👨‍🍳 Sin pedidos en preparación',
+            ctk.CTkLabel(self._prep_frame, text='Sin pedidos en preparación',
                          text_color='#666', font=ctk.CTkFont(size=13)).pack(pady=30)
             return
         for pedido in pendientes:

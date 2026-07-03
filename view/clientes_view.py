@@ -11,7 +11,7 @@ class ClientesView(ctk.CTkFrame):
         self._clientes = []
 
         label = ctk.CTkLabel(
-            self, text='👥 Clientes',
+            self, text='Clientes',
             font=ctk.CTkFont(size=28, weight='bold'), anchor='w'
         )
         label.pack(fill='x', padx=30, pady=(25, 5))
@@ -243,7 +243,7 @@ class ClientesView(ctk.CTkFrame):
         # ── BFS / DFS ──
         ctk.CTkLabel(scroll_main, text=f'🌐 BFS desde "{vertices[0]}": {grafo.bfs(vertices[0]) if vertices else "N/A"}',
                      font=ctk.CTkFont(size=12), text_color='#2ECC71', wraplength=680).pack(anchor='w', padx=10, pady=(8, 2))
-        ctk.CTkLabel(scroll_main, text=f'🔍 DFS desde "{vertices[0]}": {grafo.dfs(vertices[0]) if vertices else "N/A"}',
+        ctk.CTkLabel(scroll_main, text=f'DFS desde "{vertices[0]}": {grafo.dfs(vertices[0]) if vertices else "N/A"}',
                      font=ctk.CTkFont(size=12), text_color='#3498DB', wraplength=680).pack(anchor='w', padx=10, pady=2)
 
         # ── Euleriano / Hamiltoniano ──

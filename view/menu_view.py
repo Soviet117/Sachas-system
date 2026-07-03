@@ -12,7 +12,7 @@ class MenuView(ctk.CTkFrame):
         self._categoria_actual = 'Todas'
 
         label = ctk.CTkLabel(
-            self, text='📋 Gestión del Menú',
+            self, text='Gestión del Menú',
             font=ctk.CTkFont(size=28, weight='bold'), anchor='w'
         )
         label.pack(fill='x', padx=30, pady=(25, 5))
@@ -36,7 +36,7 @@ class MenuView(ctk.CTkFrame):
         self._cat_menu = ctk.CTkOptionMenu(toolbar, values=['Todas'], variable=self._cat_var, command=lambda x: self._filtrar())
         self._cat_menu.pack(side='left', padx=5)
 
-        ctk.CTkButton(toolbar, text='🌳 Ver Árbol AVL', width=120, fg_color='#8B4513', hover_color='#A0522D',
+        ctk.CTkButton(toolbar, text='Ver Árbol AVL', width=120, fg_color='#8B4513', hover_color='#A0522D',
                       command=self._mostrar_arbol).pack(side='right', padx=5)
 
         self._tabla_frame = ctk.CTkScrollableFrame(self, fg_color='#16213e', corner_radius=12,
@@ -176,7 +176,7 @@ class MenuView(ctk.CTkFrame):
         frame = ctk.CTkFrame(dialog, fg_color='#16213e', corner_radius=12)
         frame.pack(fill='both', expand=True, padx=15, pady=15)
 
-        ctk.CTkLabel(frame, text='🌳 Catálogo como Árbol AVL (ordenado por nombre)',
+        ctk.CTkLabel(frame, text='Catálogo como Árbol AVL (ordenado por nombre)',
                      font=ctk.CTkFont(size=16, weight='bold')).pack(pady=(10, 5))
         ctk.CTkLabel(frame, text='Cada nodo es un producto · Búsqueda O(log n) · Auto-balanceable',
                      font=ctk.CTkFont(size=11), text_color='#888').pack()
@@ -200,7 +200,7 @@ class MenuView(ctk.CTkFrame):
         info.pack(fill='x', padx=10, pady=2)
 
         if not arbol.raiz:
-            canvas.create_text(350, 200, text='🌳 Catálogo vacío — agrega productos primero',
+            canvas.create_text(350, 200, text='Catálogo vacío — agrega productos primero',
                                fill='#666666', font=('Arial', 14))
             return
 
@@ -273,5 +273,5 @@ class MenuView(ctk.CTkFrame):
 
         ops = arbol.obtener_operaciones()
         if ops:
-            ctk.CTkLabel(info, text='🔄 ' + ' | '.join(ops[-5:]),
+            ctk.CTkLabel(info, text='' + ' | '.join(ops[-5:]),
                          font=ctk.CTkFont(size=10), text_color='#F39C12', wraplength=720).pack(anchor='w')

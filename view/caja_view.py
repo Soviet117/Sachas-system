@@ -11,7 +11,7 @@ class CajaView(ctk.CTkFrame):
         self.venta_ctrl = VentaController()
 
         label = ctk.CTkLabel(
-            self, text='💰 Caja / Punto de Venta',
+            self, text='Caja / Punto de Venta',
             font=ctk.CTkFont(size=28, weight='bold'), anchor='w'
         )
         label.pack(fill='x', padx=30, pady=(25, 5))
@@ -110,7 +110,7 @@ class CajaView(ctk.CTkFrame):
 
             btn_frame = ctk.CTkFrame(card, fg_color='transparent')
             btn_frame.pack(fill='x', padx=12, pady=(4, 8))
-            ctk.CTkButton(btn_frame, text='💵 Cobrar', height=30,
+            ctk.CTkButton(btn_frame, text='Cobrar', height=30,
                           font=ctk.CTkFont(size=12),
                           fg_color='#1E8449', hover_color='#2ECC71',
                           command=lambda pid=pedido.id: self._cobrar_id(pid)).pack(side='right', padx=2)
