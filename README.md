@@ -65,6 +65,9 @@ cd sachas-cafe
 sudo apt install python3-tk
 # En Fedora:
 # sudo dnf install python3-tkinter
+# En Arch:
+# sudo pacman -S tk
+
 
 # 3. Crear y activar entorno virtual (opcional pero recomendado)
 python3 -m venv .venv
