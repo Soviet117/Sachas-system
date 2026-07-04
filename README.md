@@ -60,15 +60,21 @@ Clonar y Ejecutar
 git clone https://github.com/tu-usuario/sachas-cafe.git
 cd sachas-cafe
 
-# 2. Crear y activar entorno virtual (opcional pero recomendado)
+# 2. Instalar dependencia del sistema (solo Linux — tkinter no viene con Python)
+# En Ubuntu/Debian:
+sudo apt install python3-tk
+# En Fedora:
+# sudo dnf install python3-tkinter
+
+# 3. Crear y activar entorno virtual (opcional pero recomendado)
 python3 -m venv .venv
 source .venv/bin/activate    # Linux / macOS
 # .venv\Scripts\activate     # Windows
 
-# 3. Instalar dependencias
+# 4. Instalar dependencias Python
 pip install -r requirements.txt
 
-# 4. Ejecutar el sistema
+# 5. Ejecutar el sistema
 python main.py
 ```
 
