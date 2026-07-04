@@ -1,0 +1,452 @@
+========================================
+CONTEXTO PARA INFORME ACADÉMICO
+SACHAS CAFÉ - SISTEMA DE GESTIÓN
+Curso: Algoritmos y Estructuras de Datos
+========================================
+
+========================================
+1. DATOS GENERALES DEL PROYECTO
+========================================
+
+Nombre del proyecto: Sachas Café - Sistema de Gestión
+Arquitectura: MVC + DAO (Model-View-Controller + Data Access Object)
+Lenguaje: Python 3
+GUI: CustomTkinter (tema oscuro, sidebar de navegación tipo web)
+Base de datos: SQLite
+Dependencias: customtkinter, Pillow, matplotlib
+Estructura de directorios:
+├── main.py                 # Punto de entrada
+├── model/
+│   ├── entities/           # TADs básicos (Producto, Pedido, Cliente, Venta)
+│   └── dao/                # Capa de acceso a datos (CRUD SQLite)
+├── view/                   # Interfaz gráfica (menú, pedidos, caja, clientes)
+├── controller/             # Lógica de negocio
+├── structures/             # TADs del curso implementados desde cero
+├── database/               # Esquema SQL y archivo .db
+└── assets/                 # Recursos gráficos (actualmente vacío)
+
+
+========================================
+2. PROBLEMÁTICA
+========================================
+
+La cafetería Sachas enfrenta los siguientes problemas en su gestión diaria:
+
+a) Gestión manual de pedidos: Los pedidos se toman en papel. Se pierden, se
+   olvidan, no hay trazabilidad del estado actual (cola, espera, preparación,
+   listo). No se sabe qué pedido va primero ni cuánto tiempo lleva.
+
+b) Catálogo desorganizado: No existe una forma eficiente de buscar productos
+   por nombre o filtrar por categoría. Agregar, modificar o eliminar productos
+   implica tediosos procesos manuales.
+
+c) Fidelización nula: No hay registro formal de clientes ni sistema de puntos
+   que incentive la recurrencia. No se sabe quiénes son los clientes más fieles.
+
+d) Sin recomendaciones: No se aprovecha el histórico de ventas para sugerir
+   combos o productos relacionados ("los que compraron X también compraron Y").
+
+e) Control de caja deficiente: Las ventas del día se registran en libreta.
+   No hay resumen automático de total del día ni historial de transacciones.
+   No se sabe cuánto se vendió ni cuántas ventas se realizaron.
+
+f) Procesos sin automatizar: No hay cola de espera, ni temporizadores de
+   preparación, ni posibilidad de deshacer acciones errores.
+
+
+========================================
+3. SOLUCIÓN — SISTEMA IMPLEMENTADO
+========================================
+
+El sistema Sachas Café resuelve la problemática con 4 módulos principales,
+cada uno integrando una o más estructuras de datos del curso:
+
+--- MÓDULO 1: MENÚ (CRUD + Árbol AVL) ---
+Vista: view/menu_view.py
+Controlador: controller/producto_controller.py
+Estructura: structures/tad_arbol_avl.py (Árbol AVL auto-balanceado)
+
+Funcionalidades:
+- CRUD completo de productos: crear, leer, actualizar, eliminar
+- Búsqueda en tiempo real por nombre o categoría
+- Filtro de productos por categoría (Bebidas Calientes, Frías, Comidas, Postres)
+- Visualización gráfica del Árbol AVL ordenado alfabéticamente por nombre
+- Muestra los 3 recorridos: Inorden (ascendente), Preorden, Postorden
+- El árbol se auto-balancea con rotaciones simples y dobles
+
+--- MÓDULO 2: PEDIDOS (Cola FIFO + Pila + Lista Doblemente Enlazada) ---
+Vista: view/pedidos_view.py
+Controlador: controller/pedido_controller.py
+Estructuras:
+  - structures/tad_cola.py (Cola FIFO)
+  - structures/tad_pila.py (Pila para deshacer)
+  - structures/tad_lista_doble.py (Lista doblemente enlazada)
+
+Funcionalidades:
+- Creación de pedidos seleccionando cliente + productos + cantidades
+- Flujo FIFO: Cola inicial → Espera → Preparación → Listo → Caja
+- Temporizador en tiempo real para pedidos en preparación (se actualiza cada 1s)
+- Botón "Deshacer" que revierte la última acción usando una Pila (LIFO)
+- Posibilidad de devolver un pedido de preparación a espera
+
+Flujo de estados:
+  en_cola → espera → preparacion → listo → completado (cuando se cobra)
+
+--- MÓDULO 3: CAJA / PUNTO DE VENTA ---
+Vista: view/caja_view.py
+Controlador: controller/venta_controller.py
+
+Funcionalidades:
+- Lista de pedidos listos para cobrar (resaltados en verde)
+- Cobro con acumulación de puntos para el cliente (1 punto por sol)
+- Resumen del día: total de ventas (S/) y cantidad de transacciones
+- Historial de últimas 10 ventas (id pedido, método pago, monto)
+
+--- MÓDULO 4: CLIENTES (CRUD + Grafo de Recomendaciones) ---
+Vista: view/clientes_view.py
+Controlador: controller/cliente_controller.py
+Estructura: structures/tad_grafo.py (Grafo con Matriz de Adyacencia)
+
+Funcionalidades:
+- CRUD de clientes con búsqueda por nombre o teléfono
+- Ranking "Cliente Estrella" (top 5) con medallas 🥇🥈🥉
+- Grafo no dirigido de recomendaciones basado en productos comprados juntos
+- Muestra la Matriz de Adyacencia completa
+- Recorridos BFS (Anchura) y DFS (Profundidad)
+- Verificación de Euleriano y Hamiltoniano
+
+
+========================================
+4. ESTRUCTURAS DE DATOS IMPLEMENTADAS
+========================================
+
+| Estructura              | Archivo                            | Unidad    | Uso en el sistema                        |
+|-------------------------|------------------------------------|-----------|------------------------------------------|
+| TAD (Clases)            | model/entities/*.py                | Unidad I  | Producto, Pedido, Cliente, Venta         |
+| Lista Enlazada Simple   | structures/tad_lista.py            | Unidad II | Base para otras estructuras              |
+| Lista Doblemente Enlazada| structures/tad_lista_doble.py     | Unidad II | Pedidos en preparación                   |
+| Pila (Stack, LIFO)      | structures/tad_pila.py             | Unidad II | Deshacer acciones (cada acción se apila) |
+| Cola (Queue, FIFO)      | structures/tad_cola.py             | Unidad II | Cola de pedidos a cocina                 |
+| Grafo (Matriz Adyacencia)| structures/tad_grafo.py           | Unidad III| Recomendación de combos (BFS/DFS)        |
+| Árbol AVL (balanceado)  | structures/tad_arbol_avl.py        | Unidad IV | Catálogo de productos                    |
+
+Todas las estructuras están implementadas desde cero en Python puro,
+sin usar librerías externas de estructuras de datos.
+
+
+========================================
+5. DESCRIPCIÓN DE CADA TAD
+========================================
+
+--- TAD Cola (Queue - FIFO) - structures/tad_cola.py ---
+
+Implementación de una cola simple con nodos enlazados.
+Operaciones: enqueue (encolar), dequeue (desencolar), peek (ver frente),
+esta_vacia, tamano, recorrer, vaciar.
+
+Uso en el sistema: La cola_pedidos almacena pedidos recién creados en orden
+de llegada. El primero en llegar es el primero en pasar a espera (FIFO).
+
+Fragmento clave:
+  def enqueue(self, dato):
+    nodo = NodoCola(dato)
+    if self.esta_vacia():
+      self._frente = nodo
+      self._final = nodo
+    else:
+      self._final.siguiente = nodo
+      self._final = nodo
+    self._tamano += 1
+
+  def dequeue(self):
+    if self.esta_vacia():
+      return None
+    dato = self._frente.dato
+    self._frente = self._frente.siguiente
+    if not self._frente:
+      self._final = None
+    self._tamano -= 1
+    return dato
+
+
+--- TAD Pila (Stack - LIFO) - structures/tad_pila.py ---
+
+Implementación de una pila con nodos enlazados.
+Operaciones: push (apilar), pop (desapilar), peek, esta_vacia, tamano.
+
+Uso en el sistema: Cada acción sobre pedidos (crear, pasar a espera, pasar
+a preparación, marcar listo) se apila en pila_deshacer. El botón "Deshacer"
+hace pop y revierte la última acción.
+
+Fragmento clave:
+  def push(self, dato):
+    nodo = NodoPila(dato)
+    nodo.siguiente = self._cima
+    self._cima = nodo
+    self._tamano += 1
+
+  def pop(self):
+    if self.esta_vacia():
+      return None
+    dato = self._cima.dato
+    self._cima = self._cima.siguiente
+    self._tamano -= 1
+    return dato
+
+
+--- TAD Lista Doblemente Enlazada - structures/tad_lista_doble.py ---
+
+Cada nodo tiene puntero al siguiente y al anterior, permitiendo
+recorrido bidireccional.
+
+Uso en el sistema: lista_pendientes mantiene los pedidos en preparación,
+permitiendo insertar al final y eliminar elementos específicos (porque
+cualquier pedido puede marcar como listo o devolver a espera).
+
+Operaciones: insertar_inicio, insertar_final, eliminar, eliminar_primero,
+eliminar_ultimo, buscar, recorrer_adelante, recorrer_atras.
+
+
+--- TAD Árbol AVL (Auto-balanceado) - structures/tad_arbol_avl.py ---
+
+Árbol binario de búsqueda que se mantiene balanceado mediante rotaciones
+simples (derecha/izquierda) y dobles (izquierda-derecha, derecha-izquierda).
+
+Factor de balance = altura(izquierdo) - altura(derecho), debe ser -1, 0 o 1.
+
+Uso en el sistema: El catálogo de productos se carga en un Árbol AVL usando
+el nombre del producto como clave. Esto permite búsqueda O(log n), inserción
+ordenada y visualización gráfica del árbol con los 3 recorridos.
+
+Fragmento clave (inserción con balanceo):
+  def _insertar_rec(self, nodo, clave, valor):
+    if not nodo:
+      return NodoAVL(clave, valor)
+    if clave < nodo.clave:
+      nodo.izquierdo = self._insertar_rec(nodo.izquierdo, clave, valor)
+    elif clave > nodo.clave:
+      nodo.derecho = self._insertar_rec(nodo.derecho, clave, valor)
+    else:
+      nodo.valor = valor
+      return nodo
+    self._actualizar_altura(nodo)
+    balance = self._balance(nodo)
+    # Rotaciones para auto-balanceo
+    if balance > 1 and clave < nodo.izquierdo.clave:
+      return self._rotacion_derecha(nodo)
+    if balance < -1 and clave > nodo.derecho.clave:
+      return self._rotacion_izquierda(nodo)
+    if balance > 1 and clave > nodo.izquierdo.clave:
+      nodo.izquierdo = self._rotacion_izquierda(nodo.izquierdo)
+      return self._rotacion_derecha(nodo)
+    if balance < -1 and clave < nodo.derecho.clave:
+      nodo.derecho = self._rotacion_derecha(nodo.derecho)
+      return self._rotacion_izquierda(nodo)
+    return nodo
+
+
+--- TAD Grafo (Matriz de Adyacencia) - structures/tad_grafo.py ---
+
+Grafo no dirigido implementado con matriz de adyacencia.
+Cada vértice es un producto, cada arista con peso representa la
+cantidad de veces que dos productos se compraron juntos.
+
+Uso en el sistema: El grafo de recomendaciones se construye analizando
+pedidos históricos. Si el Café Americano y el Croissant aparecen juntos
+en varios pedidos, se crea una arista entre ellos. BFS explora relaciones
+nivel por nivel; DFS explora cadenas profundas de relaciones.
+
+Fragmento clave:
+  def agregar_vertice(self, vertice):
+    if vertice not in self._indices:
+      self._indices[vertice] = len(self._vertices)
+      self._vertices.append(vertice)
+      for fila in self._matriz:
+        fila.append(0)
+      self._matriz.append([0] * len(self._vertices))
+
+  def agregar_arista(self, origen, destino, peso=1):
+    i, j = self._indices[origen], self._indices[destino]
+    self._matriz[i][j] = peso
+    if not self.dirigido:
+      self._matriz[j][i] = peso
+
+  def bfs(self, inicio):
+    visitados = set()
+    cola = [inicio]
+    recorrido = []
+    while cola:
+      vertice = cola.pop(0)
+      if vertice not in visitados:
+        visitados.add(vertice)
+        recorrido.append(vertice)
+        for ady in self.adyacentes(vertice):
+          if ady not in visitados:
+            cola.append(ady)
+    return recorrido
+
+  def dfs(self, inicio):
+    visitados = set()
+    pila = [inicio]
+    recorrido = []
+    while pila:
+      vertice = pila.pop()
+      if vertice not in visitados:
+        visitados.add(vertice)
+        recorrido.append(vertice)
+        for ady in self.adyacentes(vertice):
+          if ady not in visitados:
+            pila.append(ady)
+    return recorrido
+
+
+--- TADs Básicos (Entidades) - model/entities/ ---
+
+Producto: id, nombre, descripcion, precio, categoria, stock
+Cliente: id, nombre, telefono, email, puntos
+Pedido: id, id_cliente, fecha, estado, total, detalles
+DetallePedido: id, id_pedido, id_producto, cantidad, subtotal, producto_nombre
+Venta: id, id_pedido, total, metodo_pago, fecha
+
+
+========================================
+6. ORQUESTACIÓN DE ESTRUCTURAS
+========================================
+
+El PedidoController (controller/pedido_controller.py) es el mejor ejemplo
+de cómo conviven múltiples estructuras:
+
+  class PedidoController:
+    def __init__(self):
+      self.dao = PedidoDAO()                    # Persistencia SQLite
+      self.cola_pedidos = Cola()                 # Cola FIFO principal
+      self.cola_espera = Cola()                  # Cola FIFO de espera
+      self.pila_deshacer = Pila()                # Pila LIFO para deshacer
+      self.lista_pendientes = ListaDoblementeEnlazada()  # Preparación
+
+Flujo de un pedido:
+1. Se crea → enqueue en cola_pedidos (FIFO)
+2. Pasa a espera → dequeue de cola_pedidos, enqueue en cola_espera
+3. Pasa a preparación → dequeue de cola_espera, insertar_final en lista_pendientes
+4. Se marca listo → se actualiza estado
+5. Se cobra → se crea venta en BD, se acumulan puntos
+
+Cada paso se registra en la pila_deshacer para poder revertirlo.
+
+
+========================================
+7. FOTOS RECOMENDADAS PARA EL INFORME
+========================================
+
+Ejecutar: python main.py
+Tomar screenshots con cualquier herramienta (GNOME Screenshot, etc.)
+
+FOTO 1 - Menú Principal:
+  - Mostrar la ventana completa con sidebar (Menú activo resaltado en verde)
+  - Visibles: tabla de productos con columnas #, Nombre, Categoría, Precio, Stock
+  - Barra de búsqueda y filtro de categorías
+  - Debe verse el logo "SACHAS CAFÉ"
+
+FOTO 2 - Árbol AVL del Catálogo:
+  - Click en "Ver Árbol AVL" en la vista Menú
+  - Mostrar el árbol visual con nodos (rectángulos verdes), conexiones, precios
+  - Abajo deben verse los recorridos Inorden, Preorden, Postorden
+  - Ideal si se ven al menos 6-8 productos en el árbol
+
+FOTO 3 - Creación de Pedido:
+  - Vista Pedidos, panel izquierdo "Nuevo Pedido"
+  - Mostrar: cliente seleccionado, productos con cantidades ajustadas
+  - Resumen del pedido visible con total (S/)
+
+FOTO 4 - Cola FIFO de Pedidos:
+  - Pestaña "Cola FIFO" seleccionada en el panel derecho
+  - Mínimo 2 pedidos encolados, el primero con borde azul "📌"
+  - Cada tarjeta debe mostrar id, cliente, total y detalles
+
+FOTO 5 - Pedido en Preparación con Timer:
+  - Pestaña "Preparación" seleccionada
+  - Pedido visible con temporizador ⏱ corriendo (MM:SS)
+  - Botones "✅ Listo" y "↩️ Devolver a Espera"
+
+FOTO 6 - Caja / Punto de Venta:
+  - Pedido listo para cobrar (tarjeta verde con borde #2ECC71)
+  - Resumen de caja: "Total del día: S/ XX.XX" y "Ventas realizadas: X"
+  - Historial de últimas ventas abajo
+
+FOTO 7 - Grafo de Recomendaciones:
+  - Click en "🔗 Ver Grafo Recomendaciones" en vista Clientes
+  - Mostrar: explicación, lista de productos, Matriz de Adyacencia completa
+  - Resultados de BFS y DFS
+  - Si hay ≤6 productos, mostrar Euleriano/Hamiltoniano
+
+FOTO 8 - Clientes:
+  - Tabla de clientes con columnas #, Nombre, Teléfono, Email, Puntos
+  - Panel "Cliente Estrella" con medallas 🥇🥈🥉 y puntajes
+
+
+========================================
+8. BASE DE DATOS (SQLite)
+========================================
+
+Archivo: database/schema.sql
+Base: database/sachas.db (se crea automáticamente)
+
+5 tablas:
+  producto(id, nombre, descripcion, precio, categoria, stock, created_at)
+  cliente(id, nombre, telefono, email, puntos, created_at)
+  pedido(id, id_cliente, fecha, estado, total)
+  detalle_pedido(id, id_pedido, id_producto, cantidad, subtotal)
+  venta(id, id_pedido, total, metodo_pago, fecha)
+
+15 productos semilla:
+  - Bebidas Calientes: Café Americano (S/5), Latte (S/7), Cappuccino (S/8),
+    Mocha (S/9), Té Verde (S/4), Chocolate Caliente (S/7)
+  - Bebidas Frías: Jugo de Naranja (S/6), Limonada Frozen (S/7),
+    Smoothie de Fresa (S/10)
+  - Comidas: Sandwich de Pollo (S/12), Sandwich Vegetal (S/11),
+    Croissant con Jamón (S/9)
+  - Postres: Cheesecake (S/10), Brownie (S/7), Alfajor Artesanal (S/4)
+
+
+========================================
+9. ARQUITECTURA MVC + DAO
+========================================
+
+La App principal (view/app.py) usa CustomTkinter con sidebar de navegación:
+
+  class App(ctk.CTk):
+    - title: 'Sachas Café - Sistema de Gestión'
+    - geometry: 1280x800
+    - sidebar: 4 botones (Menú, Pedidos, Caja, Clientes)
+    - main_container: cambia entre las 4 vistas con _show_view()
+    - Tema oscuro con color verde (#2ECC71) como acento
+
+Cada vista: MenuView, PedidosView, CajaView, ClientesView
+Cada controlador: ProductoController, PedidoController, VentaController, ClienteController
+Cada DAO: ProductoDAO, PedidoDAO, VentaDAO, ClienteDAO
+Conexión única (Singleton): model/dao/conexion.py
+
+
+========================================
+10. RECOMENDACIONES PARA ESTRUCTURA DEL INFORME
+========================================
+
+1. Carátula (nombre del proyecto, universidad, curso, integrantes)
+2. Introducción (qué es Sachas Café, contexto)
+3. Problemática (gestión manual, 6 problemas detallados en sección 2)
+4. Objetivos (general y específicos)
+5. Marco Teórico (explicar cada TAD: Cola, Pila, Lista, Árbol AVL, Grafo)
+6. Metodología (MVC + DAO, Python, CustomTkinter, SQLite)
+7. Desarrollo / Implementación:
+   - Para cada TAD: foto del código + foto del sistema funcionando
+   - Módulo por módulo (Menú, Pedidos, Caja, Clientes)
+8. Resultados (fotos del sistema, explicación de cada pantalla)
+9. Conclusiones (qué se aprendió, qué TADs se implementaron, dificultades)
+10. Bibliografía
+
+Para cada estructura en el desarrollo, seguir esta plantilla:
+  - Nombre del TAD
+  - Definición teórica breve
+  - Código del TAD (el fragmento clave)
+  - Foto del sistema usando ese TAD
+  - Explicación de cómo se aplicó al problema real
