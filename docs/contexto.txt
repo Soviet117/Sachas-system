@@ -14,16 +14,58 @@ Lenguaje: Python 3
 GUI: CustomTkinter (tema oscuro, sidebar de navegación tipo web)
 Base de datos: SQLite
 Dependencias: customtkinter, Pillow, matplotlib
-Estructura de directorios:
-├── main.py                 # Punto de entrada
+Estructura de directorios (archivos Python + SQL):
+<pre>
+SachasCafe/
+├── main.py
+├── requirements.txt
+├── README.md
+├── .gitignore
 ├── model/
-│   ├── entities/           # TADs básicos (Producto, Pedido, Cliente, Venta)
-│   └── dao/                # Capa de acceso a datos (CRUD SQLite)
-├── view/                   # Interfaz gráfica (menú, pedidos, caja, clientes)
-├── controller/             # Lógica de negocio
-├── structures/             # TADs del curso implementados desde cero
-├── database/               # Esquema SQL y archivo .db
-└── assets/                 # Recursos gráficos (actualmente vacío)
+│   ├── __init__.py
+│   ├── entities/
+│   │   ├── __init__.py
+│   │   ├── producto.py          # TAD Producto (id, nombre, descripcion, precio, categoria, stock)
+│   │   ├── pedido.py            # TAD Pedido + DetallePedido
+│   │   ├── cliente.py           # TAD Cliente (id, nombre, telefono, email, puntos)
+│   │   └── venta.py             # TAD Venta (id, id_pedido, total, metodo_pago, fecha)
+│   └── dao/
+│       ├── __init__.py
+│       ├── conexion.py          # Singleton SQLite
+│       ├── producto_dao.py      # CRUD producto
+│       ├── pedido_dao.py        # CRUD pedido + detalles
+│       ├── cliente_dao.py       # CRUD cliente
+│       └── venta_dao.py         # CRUD venta + reportes
+├── view/
+│   ├── __init__.py
+│   ├── app.py                   # CustomTkinter main window
+│   ├── menu_view.py             # CRUD + Árbol AVL visual
+│   ├── pedidos_view.py          # Cola FIFO + Pila + Lista doble
+│   ├── caja_view.py             # Punto de venta + resumen diario
+│   └── clientes_view.py         # CRUD + Grafo recomendaciones
+├── controller/
+│   ├── __init__.py
+│   ├── producto_controller.py   # Lógica menú + Árbol AVL
+│   ├── pedido_controller.py     # Lógica pedidos (cola/pila/lista)
+│   ├── venta_controller.py      # Lógica caja/ventas
+│   └── cliente_controller.py    # Lógica clientes + Grafo
+├── structures/
+│   ├── __init__.py
+│   ├── tad_cola.py              # Cola FIFO (pedidos en cola/espera)
+│   ├── tad_pila.py              # Pila LIFO (deshacer acciones)
+│   ├── tad_lista.py             # Lista enlazada simple (base)
+│   ├── tad_lista_doble.py       # Lista doble (pedidos en preparación)
+│   ├── tad_arbol_avl.py         # Árbol AVL (catálogo productos)
+│   └── tad_grafo.py             # Grafo matriz adyacencia (recomendaciones)
+├── database/
+│   ├── schema.sql               # DDL completo + datos semilla
+│   └── sachas.db                # Base SQLite (auto-creada)
+├── assets/                      # Recursos gráficos
+└── docs/
+    ├── contexto.txt             # Este documento
+    ├── Informe.docx
+    └── SIS_01_Algoritmos y Estructuras de Datos_01 (1) (1).pdf
+</pre>
 
 
 ========================================
@@ -450,3 +492,87 @@ Para cada estructura en el desarrollo, seguir esta plantilla:
   - Código del TAD (el fragmento clave)
   - Foto del sistema usando ese TAD
   - Explicación de cómo se aplicó al problema real
+
+
+========================================
+11. SQL PARA DIAGRAMA DE BASE DE DATOS (DER)
+========================================
+
+El siguiente SQL puede copiarse en herramientas como dbdiagram.io,
+drawSQL, MySQL Workbench, o cualquier generador de DER compatible
+con SQLite/PostgreSQL para visualizar el diagrama entidad-relación:
+
+```sql
+-- ============================================
+-- SACHAS CAFÉ - DIAGRAMA ENTIDAD-RELACIÓN
+-- ============================================
+-- Copiar y pegar en dbdiagram.io o similar
+
+-- Tabla: producto
+CREATE TABLE producto (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE,
+    descripcion TEXT DEFAULT '',
+    precio REAL NOT NULL,
+    categoria TEXT NOT NULL,
+    stock INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: cliente
+CREATE TABLE cliente (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    telefono TEXT DEFAULT '',
+    email TEXT DEFAULT '',
+    puntos INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: pedido
+CREATE TABLE pedido (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_cliente INTEGER,  -- FK → cliente.id (opcional, puede ser NULL para 'General')
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado TEXT DEFAULT 'en_cola',  -- en_cola | espera | preparacion | listo | completado | cancelado
+    total REAL DEFAULT 0.0,
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id)
+);
+
+-- Tabla: detalle_pedido (relación muchos a muchos entre pedido y producto)
+CREATE TABLE detalle_pedido (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_pedido INTEGER NOT NULL,   -- FK → pedido.id
+    id_producto INTEGER NOT NULL, -- FK → producto.id
+    cantidad INTEGER NOT NULL,
+    subtotal REAL NOT NULL,
+    FOREIGN KEY (id_pedido) REFERENCES pedido(id),
+    FOREIGN KEY (id_producto) REFERENCES producto(id)
+);
+
+-- Tabla: venta
+CREATE TABLE venta (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_pedido INTEGER UNIQUE NOT NULL, -- FK → pedido.id (1 pedido → 1 venta)
+    total REAL NOT NULL,
+    metodo_pago TEXT DEFAULT 'efectivo',  -- efectivo | tarjeta | yape | plin
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_pedido) REFERENCES pedido(id)
+);
+```
+
+Relaciones del diagrama:
+  ┌──────────┐       ┌──────────────┐       ┌────────────────┐
+  │ cliente  │1──N──>│   pedido     │1──N──>│ detalle_pedido │
+  └──────────┘       └──────────────┘       └───────┬────────┘
+                           │ 1                      N │
+                           │                         │
+                           v                         v
+                     ┌──────────┐              ┌──────────┐
+                     │  venta   │              │ producto │
+                     └──────────┘              └──────────┘
+
+  NOTA: pedido → venta es 1:1 (un pedido genera una sola venta al cobrar)
+        pedido → detalle_pedido es 1:N (un pedido tiene múltiples detalles)
+        producto → detalle_pedido es 1:N (un producto aparece en varios detalles)
+        cliente → pedido es 1:N (un cliente puede tener muchos pedidos)
